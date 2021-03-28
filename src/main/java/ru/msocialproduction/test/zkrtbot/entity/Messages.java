@@ -6,10 +6,12 @@ import javax.persistence.*;
 @Table(name = "messages")
 public class Messages {
     @Id
+    @SequenceGenerator(name = "messages_generator", sequenceName = "seq_messages", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "messages_generator")
     private Integer id;
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "user_id")
-    private Integer userId;
+    private Users user;
     @Column
     private String question;
     @Column
@@ -23,12 +25,12 @@ public class Messages {
         this.id = id;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public Users getUser() {
+        return user;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUser(Users user) {
+        this.user = user;
     }
 
     public String getQuestion() {

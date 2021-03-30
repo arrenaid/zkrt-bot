@@ -14,7 +14,10 @@ import ru.msocialproduction.test.zkrtbot.service.BackorderService;
 import ru.msocialproduction.test.zkrtbot.service.MessagesService;
 import ru.msocialproduction.test.zkrtbot.service.UsersService;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 //  name: Zkkrt_bot
 //  token: 1778061482:AAF7uzlekCKzlPc_b7R_mU6GJYNLQnwQx8I
@@ -79,11 +82,15 @@ public class Bot extends TelegramLongPollingBot {
                         }
                     }
                     break;
-                case "GET":
+                case "/get":
                     try {
-                        List<DomainEntity> domainEntity = backorderService.getDomains();
-                        backorderService.addDomains(domainEntity);
-                        sendMessage.setText(domainEntity.get(0).getDomainName());
+                        List<DomainEntity> domainsList = backorderService.getDomains();
+                        backorderService.addDomains(domainsList);
+                        LocalDateTime ldt = LocalDateTime.now();
+                        sendMessage.setText(DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).format(ldt)
+                                + " Найдено доменов - " + domainsList.size()+ "\n"+ domainsList.get(0).getDomainName()
+                                + "\n"+ domainsList.get(1).getDomainName()+ "\n"+ domainsList.get(2).getDomainName()
+                                + "\n"+ domainsList.get(3).getDomainName()+ "\n"+ domainsList.get(4).getDomainName());
                         sendMessage.setChatId(String.valueOf(update.getMessage().getChatId()));
                         Messages msg = new Messages(userService.findUserByChatId(Math.toIntExact(
                                 update.getMessage().getChatId())),messageText,sendMessage.getText());
@@ -99,15 +106,16 @@ public class Bot extends TelegramLongPollingBot {
                     }
                     break;
                 default:
+                    String answer = update.getMessage().getText() + "\nOk, nice";
                     Messages msg = new Messages(userService.findUserByChatId(Math.toIntExact(update.getMessage().getChatId()))
-                            ,update.getMessage().getText(),update.getMessage().getText());
+                            ,update.getMessage().getText(), answer);
                     try {
                         messagesService.createMessages(msg);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     sendMessage.setChatId(String.valueOf(update.getMessage().getChatId()));
-                    sendMessage.setText(update.getMessage().getText());
+                    sendMessage.setText(answer);
                     try {
                         execute(sendMessage);
                     } catch (TelegramApiException e) {
@@ -115,19 +123,6 @@ public class Bot extends TelegramLongPollingBot {
                     }
                     break;
             }
-        }
-        else {
-            List<Users> users = userService.findAll();
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setText("Bot Started");
-            users.forEach(users1 -> {
-                sendMessage.setChatId(String.valueOf(users1.getChatId()));
-                try {
-                    execute(sendMessage);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-            });
         }
     }
 

@@ -1,6 +1,7 @@
 package ru.msocialproduction.test.zkrtbot.entity;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "messages")
@@ -16,6 +17,14 @@ public class Messages {
     private String question;
     @Column
     private String answer;
+
+    public Messages (){}
+    public Messages (Users users, String question,String answer){
+        this.user = users;
+        this.question = question;
+        this.answer = answer;
+        users.setLastMessageAt();
+    }
 
     public Integer getId() {
         return id;

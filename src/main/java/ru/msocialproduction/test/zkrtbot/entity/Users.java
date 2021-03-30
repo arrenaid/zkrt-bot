@@ -15,7 +15,14 @@ public class Users {
     @Column
     private String name;
     @Column(name = "last_message_at")
-    private Date lastMessage;
+    private Date lastMessageAt;
+
+    public Users(){}
+    public Users(Integer chatId) {
+        this.chatId = chatId;
+        this.name = String.valueOf(chatId);
+        this.lastMessageAt = new Date();
+    }
 
     public Integer getChatId() {
         return chatId;
@@ -34,11 +41,11 @@ public class Users {
     }
 
     public Date getLastMessage() {
-        return lastMessage;
+        return lastMessageAt;
     }
 
-    public void setLastMessage(Date lastMessage) {
-        this.lastMessage = lastMessage;
+    public void setLastMessageAt() {
+        this.lastMessageAt = new Date();
     }
 
     public Integer getId() {

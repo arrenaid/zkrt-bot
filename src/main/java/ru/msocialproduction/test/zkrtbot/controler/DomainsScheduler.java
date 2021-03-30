@@ -10,10 +10,8 @@ import ru.msocialproduction.test.zkrtbot.entity.Users;
 import ru.msocialproduction.test.zkrtbot.service.BackorderService;
 import ru.msocialproduction.test.zkrtbot.service.UsersService;
 
-import javax.xml.crypto.Data;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -25,7 +23,7 @@ public class DomainsScheduler{
     UsersService usersService;
     @Autowired
     Bot bot;
-    @Scheduled (cron = "0 * * * * *")
+    @Scheduled (cron = "0 0 0/23 * * *", zone ="Europe/Moscow")//(cron = "0 * * * * *")
     public void go(){
         try{
             backorderService.clearDomains();

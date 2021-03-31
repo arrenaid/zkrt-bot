@@ -1,7 +1,7 @@
 package ru.msocialproduction.test.zkrtbot.controler;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -13,29 +13,25 @@ import ru.msocialproduction.test.zkrtbot.entity.Users;
 import ru.msocialproduction.test.zkrtbot.service.BackorderService;
 import ru.msocialproduction.test.zkrtbot.service.MessagesService;
 import ru.msocialproduction.test.zkrtbot.service.UsersService;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
-//  name: Zkkrt_bot
-//  token: 1778061482:AAF7uzlekCKzlPc_b7R_mU6GJYNLQnwQx8I
 @Component
-@ConfigurationProperties(prefix = "telegrambot")
 public class Bot extends TelegramLongPollingBot {
-
-    private String BOT_NAME= "Zkkrt_bot";
-    private String BOT_TOKEN="1778061482:AAG1THZdL14CiAweHWo8TkiJip_zs81VFEQ";
+    @Value("${telegrambot.botName}")
+    private String botName;
     @Override
     public String getBotUsername() {
-        return BOT_NAME;
+        return botName;
     }
+    @Value("${telegrambot.botToken}")
+    private String botToken;
     @Override
     public String getBotToken() {
-        return BOT_TOKEN;
+        return botToken;
     }
-
     @Autowired
     private UsersService userService;
     @Autowired
@@ -46,87 +42,68 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if(isMessageWithText(update)) {
-            SendMessage sendMessage = new SendMessage();
-//        if(update.getMessage() == null) return;
             String messageText = update.getMessage().getText();
             switch (messageText) {
                 case "/start":
                     Users users = userService.findUserByChatId(Math.toIntExact(update.getMessage().getChatId()));
                     if (users == null) {
-                        users = new Users(Math.toIntExact(update.getMessage().getChatId()));//344962348
-                        //users.setName(update.getMessage().getForwardSenderName());
+                        users = new Users(Math.toIntExact(update.getMessage().getChatId()));
                         try {
                             userService.createUser(users);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        sendMessage.setText("Hi");
-                        sendMessage.setChatId(String.valueOf(update.getMessage().getChatId()));
-                        Messages msg = new Messages(users,messageText,sendMessage.getText());
-                        messagesService.createMessages(msg);
-                        try {
-                            execute(sendMessage);
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
+                        addMessage(users, messageText,"new user registered\nHi " +users.getName());
                     }
                     else {
-                        sendMessage.setText("Hi");
-                        sendMessage.setChatId(String.valueOf(update.getMessage().getChatId()));
-                        Messages msg = new Messages(users,messageText,sendMessage.getText());
-                        messagesService.createMessages(msg);
-                        try {
-                            execute(sendMessage);
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
+                        addMessage(users, messageText,"Hi again "+users.getName());
                     }
                     break;
                 case "/get":
                     try {
+                        backorderService.clearDomains();
                         List<DomainEntity> domainsList = backorderService.getDomains();
                         backorderService.addDomains(domainsList);
                         LocalDateTime ldt = LocalDateTime.now();
-                        sendMessage.setText(DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).format(ldt)
-                                + " Найдено доменов - " + domainsList.size()+ "\n"+ domainsList.get(0).getDomainName()
-                                + "\n"+ domainsList.get(1).getDomainName()+ "\n"+ domainsList.get(2).getDomainName()
-                                + "\n"+ domainsList.get(3).getDomainName()+ "\n"+ domainsList.get(4).getDomainName());
-                        sendMessage.setChatId(String.valueOf(update.getMessage().getChatId()));
-                        Messages msg = new Messages(userService.findUserByChatId(Math.toIntExact(
-                                update.getMessage().getChatId())),messageText,sendMessage.getText());
-                        messagesService.createMessages(msg);
-                        try {
-                            execute(sendMessage);
-                        } catch (TelegramApiException e1) {
-                            e1.printStackTrace();
-                        }
-
+                        String answer = DateTimeFormatter.ofPattern("yyyy-MM-dd hh-mm", Locale.ENGLISH).format(ldt)
+                                + " Найдено " + domainsList.size() + " доменов \n0 - "+ domainsList.get(0).getDomainName()
+                                + "\n1 - "+ domainsList.get(1).getDomainName()+ "\n2 - "+ domainsList.get(2).getDomainName()
+                                + "\n3 - "+ domainsList.get(3).getDomainName()+ "\n4 - "+ domainsList.get(4).getDomainName()
+                                + "\n......\n"+(domainsList.size() - 2)+" - "+ domainsList.get(domainsList.size() - 2).getDomainName()
+                                + "\n"+(domainsList.size() - 1)+" - "+ domainsList.get(domainsList.size() -1).getDomainName();
+                        addMessage(userService.findUserByChatId(Math.toIntExact(update.getMessage().getChatId())),
+                                messageText,answer);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
                 default:
-                    String answer = update.getMessage().getText() + "\nOk, nice";
-                    Messages msg = new Messages(userService.findUserByChatId(Math.toIntExact(update.getMessage().getChatId()))
-                            ,update.getMessage().getText(), answer);
-                    try {
-                        messagesService.createMessages(msg);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    sendMessage.setChatId(String.valueOf(update.getMessage().getChatId()));
-                    sendMessage.setText(answer);
-                    try {
-                        execute(sendMessage);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                    }
+                    addMessage(userService.findUserByChatId(Math.toIntExact(update.getMessage().getChatId())),
+                            messageText,messageText + "\nOk, nice ");
                     break;
             }
         }
     }
-
     private boolean isMessageWithText(Update update) {
         return !update.hasCallbackQuery() && update.hasMessage() && update.getMessage().hasText();
+    }
+    private void sentAnswer(String chatId,String quest,String answer){
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText(answer);
+        sendMessage.setChatId(chatId);
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+    public void addMessage(Users user,String quest,String answer){
+        Messages msg = new Messages(user,quest,answer);
+        sentAnswer(user.getChatId().toString(),quest,answer);
+        try {
+            messagesService.createMessages(msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

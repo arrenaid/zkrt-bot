@@ -1,7 +1,6 @@
 package ru.msocialproduction.test.zkrtbot.entity;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Entity
 @Table(name = "messages")

@@ -3,9 +3,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
-
-    <include file="create-users-and-messages-scheme.xml" relativeToChangelogFile="true"/>
-    <include file="create-domains-scheme.xml" relativeToChangelogFile="true"/>
-<!--    <include file="changelog/02-data-insert-employees.xml" relativeToChangelogFile="true"/>-->
-
+    <includeAll path="db/changelog/"/>
+<!--    <include file="create-users-and-messages-scheme.xml" relativeToChangelogFile="true"/>-->
+<!--    <include file="create-domains-scheme.xml" relativeToChangelogFile="true"/>-->
 </databaseChangeLog>

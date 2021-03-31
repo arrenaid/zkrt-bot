@@ -8,7 +8,7 @@ import java.util.Date;
 public class Users {
     @Id
     @SequenceGenerator(name = "users_generator", sequenceName = "seq_users", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_generator")////)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_generator")
     private Integer id;
     @Column(name = "chat_id")
     private Integer chatId;

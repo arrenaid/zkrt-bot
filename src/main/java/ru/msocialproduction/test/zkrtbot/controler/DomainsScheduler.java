@@ -3,8 +3,6 @@ package ru.msocialproduction.test.zkrtbot.controler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.msocialproduction.test.zkrtbot.entity.DomainEntity;
 import ru.msocialproduction.test.zkrtbot.entity.Users;
 import ru.msocialproduction.test.zkrtbot.service.BackorderService;
@@ -31,17 +29,14 @@ public class DomainsScheduler{
             backorderService.addDomains(domainsList);
             List<Users> users = usersService.findAll();
             users.forEach(users1 -> {
-                SendMessage sendMessage = new SendMessage();
                 LocalDateTime ldt = LocalDateTime.now();
-                sendMessage.setText(
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).format(ldt)
-                                + " Найдено доменов - " + domainsList.size());
-                sendMessage.setChatId(String.valueOf(users1.getChatId()));
-                try {
-                    bot.execute(sendMessage);
-                } catch (TelegramApiException e1) {
-                    e1.printStackTrace();
-                }
+                String answer = DateTimeFormatter.ofPattern("yyyy-MM-dd hh-mm", Locale.ENGLISH).format(ldt)
+                        + " Найдено " + domainsList.size() + " доменов \n0 - "+ domainsList.get(0).getDomainName()
+                        + "\n1 - "+ domainsList.get(1).getDomainName()+ "\n2 - "+ domainsList.get(2).getDomainName()
+                        + "\n3 - "+ domainsList.get(3).getDomainName()+ "\n4 - "+ domainsList.get(4).getDomainName()
+                        + "\n......\n"+(domainsList.size() - 2)+" - "+ domainsList.get(domainsList.size() - 2).getDomainName()
+                        + "\n"+(domainsList.size() - 1)+" - "+ domainsList.get(domainsList.size() -1).getDomainName();
+                bot.addMessage(users1,DateTimeFormatter.ofPattern("yyyy-MM-dd hh-mm", Locale.ENGLISH).format(ldt),answer);
             });
         } catch (Exception e) {
             e.printStackTrace();

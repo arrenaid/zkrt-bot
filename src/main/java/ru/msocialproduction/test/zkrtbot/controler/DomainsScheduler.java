@@ -23,7 +23,7 @@ public class DomainsScheduler{
     UsersService usersService;
     @Autowired
     Bot bot;
-    @Scheduled (cron = "0 0 0/23 * * *", zone ="Europe/Moscow")//(cron = "0 * * * * *")
+    @Scheduled (cron = "0 0 18 * * *", zone ="Europe/Moscow")//(cron = "0 * * * * *")
     public void go(){
         try{
             backorderService.clearDomains();

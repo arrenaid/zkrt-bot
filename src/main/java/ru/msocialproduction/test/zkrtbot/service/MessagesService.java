@@ -9,7 +9,7 @@ import java.util.List;
 @Service
 public class MessagesService {
 
-    @Autowired
+    //@Autowired
     private final MessagesRepository messagesRepository;
 
     public MessagesService(MessagesRepository messagesRepository) {

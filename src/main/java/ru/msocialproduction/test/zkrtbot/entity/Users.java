@@ -18,7 +18,7 @@ public class Users {
     private Date lastMessageAt;
 
     public Users(){}
-    public Users(Integer chatId) {
+    public Users(int chatId) {
         this.chatId = chatId;
         this.name = String.valueOf(chatId);
         this.lastMessageAt = new Date();

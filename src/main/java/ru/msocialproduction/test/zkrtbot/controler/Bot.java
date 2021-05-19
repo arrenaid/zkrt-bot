@@ -1,5 +1,7 @@
 package ru.msocialproduction.test.zkrtbot.controler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -7,16 +9,11 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.msocialproduction.test.zkrtbot.entity.DomainEntity;
+import ru.msocialproduction.test.zkrtbot.ZkrtBotApplication;
 import ru.msocialproduction.test.zkrtbot.entity.Messages;
 import ru.msocialproduction.test.zkrtbot.entity.Users;
-import ru.msocialproduction.test.zkrtbot.service.BackorderService;
 import ru.msocialproduction.test.zkrtbot.service.MessagesService;
 import ru.msocialproduction.test.zkrtbot.service.UsersService;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Locale;
 
 @Component
 public class Bot extends TelegramLongPollingBot {
@@ -32,12 +29,19 @@ public class Bot extends TelegramLongPollingBot {
     public String getBotToken() {
         return botToken;
     }
+
+    public static final Logger logger = LoggerFactory.getLogger(ZkrtBotApplication.class);
+
     @Autowired
-    private UsersService userService;
+    private UsersService usersService;
     @Autowired
     private MessagesService messagesService;
     @Autowired
-    private BackorderService backorderService;
+    private DomainsScheduler scheduler;
+    @Autowired
+    private Delegate delegate;
+    @Autowired
+    private StartReply startReply;
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -45,41 +49,13 @@ public class Bot extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             switch (messageText) {
                 case "/start":
-                    Users users = userService.findUserByChatId(Math.toIntExact(update.getMessage().getChatId()));
-                    if (users == null) {
-                        users = new Users(Math.toIntExact(update.getMessage().getChatId()));
-                        try {
-                            userService.createUser(users);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        addMessage(users, messageText,"new user registered\nHi " +users.getName());
-                    }
-                    else {
-                        addMessage(users, messageText,"Hi again "+users.getName());
-                    }
+                    startReply.startReply(update.getMessage());
                     break;
                 case "/get":
-                    try {
-                        backorderService.clearDomains();
-                        List<DomainEntity> domainsList = backorderService.getDomains();
-                        backorderService.addDomains(domainsList);
-                        LocalDateTime ldt = LocalDateTime.now();
-                        String answer = DateTimeFormatter.ofPattern("yyyy-MM-dd hh-mm", Locale.ENGLISH).format(ldt)
-                                + " Найдено " + domainsList.size() + " доменов \n0 - "+ domainsList.get(0).getDomainName()
-                                + "\n1 - "+ domainsList.get(1).getDomainName()+ "\n2 - "+ domainsList.get(2).getDomainName()
-                                + "\n3 - "+ domainsList.get(3).getDomainName()+ "\n4 - "+ domainsList.get(4).getDomainName()
-                                + "\n......\n"+(domainsList.size() - 2)+" - "+ domainsList.get(domainsList.size() - 2).getDomainName()
-                                + "\n"+(domainsList.size() - 1)+" - "+ domainsList.get(domainsList.size() -1).getDomainName();
-                        addMessage(userService.findUserByChatId(Math.toIntExact(update.getMessage().getChatId())),
-                                messageText,answer);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    scheduler.getDom(update.getMessage());
                     break;
                 default:
-                    addMessage(userService.findUserByChatId(Math.toIntExact(update.getMessage().getChatId())),
-                            messageText,messageText + "\nOk, nice ");
+                    delegate.reply(update.getMessage());
                     break;
             }
         }
@@ -87,22 +63,25 @@ public class Bot extends TelegramLongPollingBot {
     private boolean isMessageWithText(Update update) {
         return !update.hasCallbackQuery() && update.hasMessage() && update.getMessage().hasText();
     }
-    private void sentAnswer(String chatId,String quest,String answer){
+
+    public void sentAnswer(Users user,String text, String answer){
+        writeMessage(new Messages(user,
+                text,answer));
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText(answer);
-        sendMessage.setChatId(chatId);
+        sendMessage.setChatId(user.getChatId().toString());
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
+            logger.error("Bot.java - error execute : ", e);
             e.printStackTrace();
         }
     }
-    public void addMessage(Users user,String quest,String answer){
-        Messages msg = new Messages(user,quest,answer);
-        sentAnswer(user.getChatId().toString(),quest,answer);
-        try {
-            messagesService.createMessages(msg);
+    public void writeMessage(Messages message){
+        try{
+            messagesService.createMessages(message);
         } catch (Exception e) {
+            Bot.logger.error(e.toString());
             e.printStackTrace();
         }
     }

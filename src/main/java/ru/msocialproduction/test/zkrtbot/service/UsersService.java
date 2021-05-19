@@ -1,7 +1,8 @@
 package ru.msocialproduction.test.zkrtbot.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
+import ru.msocialproduction.test.zkrtbot.controler.Bot;
 import ru.msocialproduction.test.zkrtbot.entity.Users;
 import ru.msocialproduction.test.zkrtbot.repository.UsersRepository;
 
@@ -9,7 +10,7 @@ import java.util.List;
 
 @Service
 public class UsersService {
-    @Autowired
+
     private final UsersRepository usersRepository;
 
     public UsersService(UsersRepository usersRepository) {
@@ -24,6 +25,12 @@ public class UsersService {
         return usersRepository.findAll();
     }
     public Users findUserByChatId(int chatId){
-        return usersRepository.findUserByChatId(chatId);
+        try {
+            return usersRepository.findUserByChatId(chatId);
+        }catch (Exception e){
+            Bot.logger.error("UserService - error findUserByChatId : ", e);
+            e.printStackTrace();
+            return null;
+        }
     }
 }

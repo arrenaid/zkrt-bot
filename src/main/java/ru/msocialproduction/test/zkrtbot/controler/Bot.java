@@ -1,7 +1,6 @@
 package ru.msocialproduction.test.zkrtbot.controler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -30,7 +29,7 @@ public class Bot extends TelegramLongPollingBot {
         return botToken;
     }
 
-    public static final Logger logger = LoggerFactory.getLogger(ZkrtBotApplication.class);
+
 
     @Autowired
     private UsersService usersService;
@@ -73,7 +72,7 @@ public class Bot extends TelegramLongPollingBot {
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            logger.error("Bot.java - error execute : ", e);
+            ZkrtBotApplication.logger.error("Bot.java - error execute : ", e);
             e.printStackTrace();
         }
     }
@@ -81,7 +80,7 @@ public class Bot extends TelegramLongPollingBot {
         try{
             messagesService.createMessages(message);
         } catch (Exception e) {
-            Bot.logger.error(e.toString());
+            ZkrtBotApplication.logger.error(e.toString());
             e.printStackTrace();
         }
     }

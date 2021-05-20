@@ -1,8 +1,7 @@
 package ru.msocialproduction.test.zkrtbot.service;
 
-
 import org.springframework.stereotype.Service;
-import ru.msocialproduction.test.zkrtbot.controler.Bot;
+import ru.msocialproduction.test.zkrtbot.ZkrtBotApplication;
 import ru.msocialproduction.test.zkrtbot.entity.Users;
 import ru.msocialproduction.test.zkrtbot.repository.UsersRepository;
 
@@ -28,7 +27,7 @@ public class UsersService {
         try {
             return usersRepository.findUserByChatId(chatId);
         }catch (Exception e){
-            Bot.logger.error("UserService - error findUserByChatId : ", e);
+            ZkrtBotApplication.logger.error("UserService - error findUserByChatId : ", e);
             e.printStackTrace();
             return null;
         }

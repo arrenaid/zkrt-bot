@@ -3,7 +3,6 @@ package ru.msocialproduction.test.zkrtbot.controler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import ru.msocialproduction.test.zkrtbot.entity.Messages;
 import ru.msocialproduction.test.zkrtbot.service.UsersService;
 
 @Component

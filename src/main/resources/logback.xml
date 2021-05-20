@@ -8,7 +8,6 @@
         </encoder>
     </appender>
     <appender name="FILE_DEBUG_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
-<!--        <file>${DEV_HOME}/debug.log</file>-->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover. Make sure the path matches the one in the file element or else
              the rollover logs are placed in the working directory. -->
@@ -25,10 +24,15 @@
         </encoder>
     </appender>
     <appender name="FILE_ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${DEV_HOME}/error/error.%d{yyyy-MM-dd--hh-mm}.%i.log</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>1MB</maxFileSize>
+                <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
             <maxHistory>60</maxHistory>
         </rollingPolicy>
@@ -38,10 +42,10 @@
         </encoder>
     </appender>
 
-    <root level="DEBUG">
-        <appender-ref ref="FILE_DEBUG_APPENDER"/>
-    </root>
     <root level="ERROR">
+        <appender-ref ref="FILE_ERROR_APPENDER"/>
+    </root>
+    <root level="DEBUG">
         <appender-ref ref="FILE_DEBUG_APPENDER"/>
     </root>
     <root level="INFO">
